@@ -1,6 +1,6 @@
 const path = require('path');
 const express = require('express');
-const morgan = require('morgan');
+//const morgan = require('morgan');
 const handlebars = require('express-handlebars');
 const cookieParse = require('cookie-parser');
 const uuid = require('uuid');
@@ -10,13 +10,20 @@ const { stdout, stderr } = require('process');
 const app = express();
 const port = 8080;
 const cookie_name = 'user_session';
+const undef = 'undefined';
+
+/* Global Restful API message */
+const res_stt = 'stt';
+const res_err = 'error';
+const res_msg = 'message';
+const res_success = 'success';
 
 // Use cookie
 app.use(cookieParse());
 // Use static
 app.use(express.static(path.join(__dirname, 'public')));
 // Nodejs Logger
-app.use(morgan('combined'));
+//app.use(morgan('combined'));
 // Express handlebars
 app.engine('hbs', handlebars({
     extname: '.hbs'
@@ -65,7 +72,9 @@ app.get('/home', (req, res)=> {
     var stmt = "SELECT id, nickname, username, email, address, description, date_login FROM tbl_user";
     db.all(stmt, params, (err, rows)=> {
         if (err) {
-            return res.status(200).render('error', {layout: 'main', error: err.message});
+            return res.status(200).render(res_err, 
+                {layout: 'main', error: err.message
+            });
         }
         var _user_tbl = '';
         for (var i = 0; i < rows.length; i++) {
@@ -87,22 +96,26 @@ app.get('/home', (req, res)=> {
 
 app.post('/api/v01/auth', (req, res, next) => {
     var errors = [];
-    if (!req.query['nickname']) {
+
+    if (typeof req.query.nickname == undef || !req.query.nickname) {
         errors.push('No nickname specified');
     }
-    if (!req.query['password']) {
+    if (typeof req.query.password == undef || !req.query.password) {
         errors.push('No password specified');
     }
     if (errors.length) {
-        return res.status(400).json({'stt': 'error', 'message': errors.join(',')});
+        return res.status(400).json({res_stt: res_err, res_msg: errors.join(',')});
     }
-    var nickname = req.query['nickname'];
-    var password = req.query['password'];
+    var nickname = req.query.nickname;
+    var password = req.query.password;
     var stmt = "SELECT * FROM tbl_user WHERE nickname='" +nickname + "'" + "AND password='" + password +"'";
     var params = [];
     if (db.all(stmt, params, (err, rows) => {
         if (err) {
-            return res.status(400).json({'stt': 'error', 'message': err.message});
+            return res.status(400).json({
+                res_stt: res_err, 
+                res_msg: err.message
+            });
         } else if (rows.length) {
             var cookie = uuid.v1().toString();
             var date = new Date();
@@ -110,14 +123,22 @@ app.post('/api/v01/auth', (req, res, next) => {
             stmt = "UPDATE tbl_user SET cookie='" +cookie +"'" +", date_login='" +date.toString() +"'" +"WHERE nickname='"+password+"'";
             db.run(stmt, params, (err)=> {
                 if (err) {
-                    return res.status(400).json({'stt': 'error', 'message': err.message});
+                    return res.status(400).json({
+                        res_stt: res_err, 
+                        res_msg: err.message});
                 } else {
                     res.cookie(cookie_name, cookie, {maxAge: 3600000});
-                    return res.status(200).json({'stt': 'success', 'message': 'Authentication Successed!'});
+                    return res.status(200).json({
+                        res_stt: res_success, 
+                        res_msg: 'Authentication Successed!'
+                    });
                 }
             });
         } else {
-            return res.status(400).json({'stt': 'error', 'message': 'Authentication failure!'});
+            return res.status(400).json({
+                res_stt: res_err, res_msg: 
+                'Authentication failure!'
+            });
         }
     }));
 })
@@ -126,8 +147,8 @@ app.get('/api/v01/logout', (req, res, next)=>{
     var _cookie = _getRequestCookie(req);
     if (!_cookie) {
         return res.status(400).json({
-            'stt': 'error',
-            'message': 'User session not authorized.'
+            res_stt: res_err,
+            res_msg: 'User session not authorized.'
         });
     }
 
@@ -135,15 +156,17 @@ app.get('/api/v01/logout', (req, res, next)=>{
     var _nickname;
     db.all(stmt, [], (err, rows) =>{
         if (err) {
-            return res.render('error', {layout: 'main', error: err.message});
+            return res.render(res_err, 
+                {layout: 'main', error: err.message
+            });
         } else  if (rows.length){
             _nickname = rows[0]['nickname'];
         }
     });
     if (_nickname == '') {
         return res.status(400).json({
-            'stt': 'error',
-            'message': 'Could not find specific user'
+            res_stt: res_err,
+            res_msg: 'Could not find specific user'
         });
     }
 
@@ -151,9 +174,15 @@ app.get('/api/v01/logout', (req, res, next)=>{
     var params = [];
     db.run(stmt, params, (err)=>{
         if (err) {
-            return res.status(400).json({'stt': 'error', 'message': err.message});
+            return res.status(400).json({
+                res_stt: res_err, 
+                res_msg: err.message
+            });
         }
-        return res.status(200).json({'stt': 'success', 'message': 'Logout Success.'});
+        return res.status(200).json({
+            res_stt: res_success, 
+            res_msg: 'Logout Success.'
+        });
     });
 
 });
@@ -164,11 +193,14 @@ app.get('/api/v01/users', (req, res, next)=>{
     var params = [];
     db.all(stmt, params, (err, rows) => {
         if (err) {
-            return res.status(400).json({'stt':'error','msg': err.message});
+            return res.status(400).json({
+                res_stt:res_err,
+                'msg': err.message
+            });
         } else {
             return res.json({
-                'stt':'success',
-                'message': 'select success',
+                res_stt:res_success,
+                res_msg: 'select success',
                 'data': rows
             });
         }
@@ -187,7 +219,10 @@ app.get('/api/v01/users', (req, res, next)=>{
 app.post('/api/v01/accadd', (req, res) => {
     var _cookie = _getRequestCookie(req);
     if (!_cookie) {
-        return res.status(400).json({'stt': 'error', 'message': 'User session not authorized.'});
+        return res.status(400).json({
+            res_stt: res_err, 
+            res_msg: 'User session not authorized.'
+        });
     }
 
     var errors = [];
@@ -208,16 +243,25 @@ app.post('/api/v01/accadd', (req, res) => {
     }
 
     if (errors.length) {
-        return res.status(400).json({'stt': 'error', 'message': errors.join(',')});
+        return res.status(400).json({
+            res_stt: res_err, 
+            res_msg: errors.join(',')
+        });
     }
 
     var stmt = "INSERT INTO tbl_user (nickname, password, username, email, address, description) VALUES (?,?,?,?,?,?)";
     var params = [req.query['nickname'], req.query['password'], req.query['username'], req.query['email'], req.query['address'], req.query['description']];
     db.run(stmt, params, (err)=> {
         if (err) {
-            return res.status(400).json({'stt': 'error', 'message': err.message});
+            return res.status(400).json({
+                res_stt: res_err, 
+                res_msg: err.message
+            });
         } else {
-            return res.status(200).json({'stt': 'success', 'message': 'success'});
+            return res.status(200).json({
+                res_stt: res_success, 
+                res_msg: res_success
+            });
         }
     });
 
@@ -227,14 +271,19 @@ app.post('/api/v01/accadd', (req, res) => {
 app.get('/api/v01/accedit', (req, res) => {
     var _cookie = _getRequestCookie(req);
     if (!_cookie) {
-        return res.status(400).json({'stt': 'error', 'message': 'User session not authorized.'});
+        return res.status(400).json({
+            res_stt: res_err, 
+            res_msg: 'User session not authorized.'
+        });
     }
-    var undef = 'undefined';
     var edited = 0;
     var params = [];
     var stmt = "UPDATE tbl_user SET";
     if (typeof req.query.nickname == undef || !req.query.nickname) {
-        return res.status(400).json({'stt': 'error', 'message': 'malformed request (00)'});
+        return res.status(400).json({
+            res_stt: res_err, 
+            res_msg: 'malformed request (00)'
+        });
     }
 
     if (typeof req.query.password !== undef && req.query.password) {
@@ -280,9 +329,15 @@ app.get('/api/v01/accedit', (req, res) => {
     console.log(stmt);
     db.run(stmt, params, (err)=> {
         if (err) {
-            return res.status(400).json({'stt': 'error', 'message': err.message});
+            return res.status(400).json({
+                res_stt: res_err, 
+                res_msg: err.message
+            });
         } else {
-            return res.status(200).json({'stt': 'success', 'message': 'update success'});
+            return res.status(200).json({
+                res_stt: res_success, 
+                res_msg: 'update success'
+            });
         }
     });
 });
@@ -290,17 +345,29 @@ app.get('/api/v01/accedit', (req, res) => {
 app.post('/api/v01/exec', (req, res) => {
     var _cookie = _getRequestCookie(req);
     if (!_cookie) {
-        return res.status(400).json({'stt': 'error','message': 'User session not authorized'});
+        return res.status(400).json({
+            res_stt: res_err,
+            res_msg: 'User session not authorized'
+        });
     } 
     if (!req.query['exec']) {
-        return res.status(400).json({'stt': 'error', 'message': 'Unknown query'});
+        return res.status(400).json({
+            res_stt: res_err, 
+            res_msg: 'Unknown query'
+        });
     }
     var command = 'ping -c4 ' + req.query['exec'];
     exec(command, (err, stdout, stderr)=> {
         if (err) {
-            return res.status(400).json({'stt': 'error', 'message': err.message});
+            return res.status(400).json({
+                res_stt: res_err, 
+                res_msg: err.message
+            });
         }
-        return res.status(200).json({'stt': 'success', 'message': 'success', 'data': stdout.toString()});
+        return res.status(200).json({
+            res_stt: res_success, 
+            res_msg: res_success, 'data': stdout.toString()
+        });
     });
 
 });
@@ -309,20 +376,35 @@ app.post('/api/v01/exec', (req, res) => {
 app.delete('/api/v01/accdel', (req, res, next)=> {
     var _cookie = _getRequestCookie(req);
     if (!_cookie) {
-        return res.status(400).json({'stt': 'error', 'message': 'user session not authorized'});
+        return res.status(400).json({res_stt: res_err, res_msg: 'user session not authorized'});
     }
     if (!req.query['nickname'] || (req.query['nickname'] && req.query['nickname']== '')) {
-        return res.status(400).json({'stt': 'error', 'message': 'malformed request'});
+        return res.status(400).json({
+            res_stt: res_err, 
+            res_msg: 'malformed request'
+        });
     }
     var _nickname = req.query['nickname'];
     stmt = `DELETE FROM tbl_user WHERE nickname='${_nickname}'`;
     var param = [];
     db.run(stmt, param, (err) => {
         if (err) {
-            return res.status(400).json({'stt': 'error', 'message': err.message});
+            return res.status(400).json({
+                res_stt: res_err, 
+            res_msg: err.message
+        });
         } else {
-            return res.status(200).json({'stt': 'success', 'message':'delete user successfuly'});
+            return res.status(200).json({
+                res_stt: res_success, 
+            res_msg:'delete user successfuly'
+        });
         }
     });
 });
-app.listen(port, () => console.log(`listen http://localhost:${port}`));
+app.listen(port, () => {
+    console.log('*********************************************************************');
+    console.log('* WELCOME TO TECHHORIZON CORP                                       *');
+    console.log(`* Welcome to Techhorizon! server listening http://localhost:${port}    *`);
+    console.log('* Application Started.                                              *');
+    console.log('*********************************************************************');
+});

@@ -8,7 +8,7 @@ let db = new sqlite3.Database(DBSOURCE, (err) => {
         console.error(err.message);
         throw err;
     } else {
-        console.log('Connected to the SQLite Database');
+        console.log('=>Connected to the SQLite Database.');
         db.run(`DROP TABLE IF EXISTS tbl_user`);
         db.run(`CREATE TABLE IF NOT EXISTS tbl_user (
             id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
