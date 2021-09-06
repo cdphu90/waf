@@ -16,7 +16,7 @@
     "nodemon": "^2.0.12"
   },
   "scripts": {
-    "start": "nodemon --inspect src/index.js",
+    "start": "nodemon --inspect src/waf.js",
     "watch": "node-sass --watch src/resources/scss/waf.scss src/public/css/waf.css",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
