@@ -1,0 +1,25 @@
+{
+  "name": "wafucase",
+  "version": "1.0.0",
+  "description": "Fortinet Web Application Demo use Cases",
+  "main": "src/index.js",
+  "dependencies": {
+    "cookie-parser": "^1.4.5",
+    "express": "^4.17.1",
+    "express-handlebars": "^5.3.3",
+    "node-sass": "^6.0.1",
+    "sqlite3": "^5.0.2",
+    "uuid": "^8.3.2"
+  },
+  "devDependencies": {
+    "morgan": "^1.10.0",
+    "nodemon": "^2.0.12"
+  },
+  "scripts": {
+    "start": "nodemon --inspect src/index.js",
+    "watch": "node-sass --watch src/resources/scss/waf.scss src/public/css/waf.css",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Cao Dinh Phu",
+  "license": "ISC"
+}

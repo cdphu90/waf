@@ -1,0 +1,45 @@
+<div class="login-form">
+    <div class="form-header"></div>
+    <div>
+        <input type="text" placeholder="USERNAME" id='_username'>
+    </div>
+    <div>
+        <input type="password" placeholder="PASSWORD" id='_password'>
+    </div>
+    <div>
+        <button onclick="_funcLogin()">Submit</button>
+    </div>
+    <div class="form-header">
+        <span id = '_msg'>Please login</span>
+    </div>
+
+</div>
+
+<script type="text/javascript">
+function _funcLogin() {
+    var username = document.getElementById('_username').value;
+    var password = document.getElementById('_password').value;
+    var msg = document.getElementById('_msg');
+    if (username == '' || password == '') {
+        msg.innerHTML = '<strong style="color: red;">ERROR: </strong>' + 'Incomplete user credential!';
+        return;
+    }
+
+    let xhr = new XMLHttpRequest();
+    var url = '/api/v01/auth?nickname=' + username +'&password='+password;
+    xhr.open('POST', url, true);
+    xhr.setRequestHeader('Content-Type', 'text/html');
+    xhr.onreadystatechange = function() {
+        if (xhr.readyState === 4 && xhr.status === 200) {
+            msg.innerHTML = '<strong style="color: red;">SUCCESS: </strong>' + 'Authentication success!';
+            window.location.replace('/home');
+        }
+        if (xhr.status == 400) {
+            msg.innerHTML = '<strong style="color: red;">ERROR: </strong>' + 'Authentication Failured';
+        } else {
+            msg.innerHTML = '<strong style="color: red;">ERROR: </strong>' + 'Access Denied';
+        }
+    };
+    xhr.send();
+}
+</script>

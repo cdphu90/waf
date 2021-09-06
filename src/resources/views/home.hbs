@@ -1,0 +1,374 @@
+<div class="container" id='container'>
+    <div class="form-header"></div>
+    <div>
+        <label for="" style="font-weight: bold; font-size: 40px; width: 100%; padding: 2px;">Fortinet WAF uCase Contact Management</label>
+        <br>
+        <label for="">Account Management</label>
+    </div>
+    <div class="container-content" id='container-content'>
+        <table id='tbl_user'>
+            <thead>
+                <tr>
+                    <th style="width: 50px;">Index</th>
+                    <th>User Login Name</th>
+                    <th>User Name</th> 
+                    <th>Email Address</th>
+                    <th>User Address</th>
+                    <th>User Descripttion</th>
+                    <th>Date Login</th>
+                </tr>
+                <tbody>
+                    {{# if users}}
+                        {{{users}}}
+                    {{/if}}
+                </tbody>
+            </thead>
+        </table>
+    </div>
+    <div style="padding: .5em;">
+        <button onclick="_accadd()">Add Account</button>
+        <button disabled id='_btn_edit' onclick="_accedit()">Edit Account</button>
+        <button disabled id='_btn_del' onclick="_userdel()">Delete Account</button>
+        <button onclick="_funcExec()">Execute Command</button>
+        <button style="float: right;" onclick="_funcLogout()">Logout</button>
+    </div>
+    <div id='exec_cmd'></div>
+    <div class="container-exec" id='exec_result'></div>
+    <div class="form-header">
+        <span id='_msg'>Used for Demotration Only.</span>
+    </div>
+</div>
+<div class="modal" id='_modal_acc_edit'>
+    <div class="modal-content">
+        <div class="modal-ctx-header"></div>
+        <label style="font-size: 40px; font-weight: bold; margin-left: .3em">Fortinet WAF Demo uCase</label>
+        <br>
+        <label for="" style="margin-left: .5em;" id = '_acc_info'>Edit An Account</label>
+        <div style="border: 1px solid #777; border-radius: 4px; border-bottom: 2px solid; margin-top: .5em; margin-left: .5em; margin-right: .5em;">
+            <div style="margin-top: .5em;">
+                <label for="" style="margin-top: .5em; ">Nickname:</label>
+            </div>
+            <div>
+                <input type="text" disabled id = '_nickname' style="margin-left: .5em; padding: 2px .5em; margin-bottom: .5em;">
+                <span style="margin-left:.5em ;color: red; font-size: 12px;">(*14)</span>
+            </div>
+            <div style="margin-bottom: .5em;">
+                <label for="">Password:</label>
+                <input type="password" id = '_password' placeholder="Password Authentication">
+                <label for="">Confirm Password:</label>
+                <input type="password" id = '_password_confirm' placeholder="Confirm Password">
+            </div>
+            <div style="margin-bottom: .5em;">
+                <label for="">Username:</label>
+                <input type="text" style="width: 95%; margin-left: .5em;" placeholder="User Display Name" id='_username'>
+            </div>
+            <div style="margin-bottom: .5em;">
+                <label for="">Email Address:</label>
+                <input type="text" name="" id="_email" style="width: 95%;" placeholder="Email Address">
+            </div>
+            <div style="margin-bottom: .5em;">
+                <label for="">Address:</label>
+                <input type="text" id="_address" style="width: 95%;" placeholder="User Address">
+            </div>
+            <div style="margin-bottom: .5em;">
+                <label for="">Description</label>
+                <input type="text" id="_description" style="width: 95%;" placeholder="User Address">
+            </div>
+        </div>
+        <div style="padding: 2px .5em;">
+            <button id = '_btn_save' onclick="_accsave()">Save</button>
+            <button id='btn_acc_edit' onclick="_close_modal()">Cancel</button>
+        </div>
+        <div class="modal-ctx-header">
+            <span id = 'msg'>Used for Demotration Only</span>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="_modal_confirm">
+    <div class="modal-confirm">
+        <div class="modal-ctx-header"></div>
+        <div style="margin-top: 1em; padding: 2px .5em">
+            <label for="" style="font-weight: bold; font-size: 20px;">Are Your Sure To Delete Selected User?</label>
+        </div>
+        <div style="margin-top: 1em;">
+            <button style="padding: 2px .5em; margin-left: .5em" onclick="_accdel()">Confirm</button>
+            <button autofocus onclick="_close_confirm()" style="padding: 2px .5em;">Cancel</button>
+        </div>
+        <div class="modal-ctx-header"></div>
+    </div>
+</div>
+
+<script type='text/javascript'>
+var _already_exec = false;
+var _selected_user = '';
+var _selected_username = '';
+var _selected_email = '';
+var _selected_address = '';
+var _selected_description = '';
+var _acc_edit = true;
+onload = _funcTbl;
+function _funcExec() {
+    if (!_already_exec) {
+        var _div_main = document.getElementById('exec_cmd');
+        var _div_exec = document.createElement("div");
+        _div_exec.style = "padding: .3em;border:1px solid #777; margin-left: .5em; margin-right: .5em; margin-bottom: .5em; border-radius: 4px;";
+        var _lbl = document.createElement("label");
+        _lbl.innerHTML = 'Heath Check:';
+        var _input_cmd = document.createElement("input");
+        _input_cmd.placeholder = 'e.g 8.8.8.8';
+        _input_cmd.maxLength = 40;
+        _input_cmd.id = '_to_exec';
+        _input_cmd.size = 40;
+        _input_cmd.style = "font-family: monospace;";
+        var _btn_exec = document.createElement("button");
+        _btn_exec.innerHTML = 'Exec Command';
+        _btn_exec.onclick = function () {
+            var _exec_result = document.getElementById('exec_result');
+            var _div_result = document.createElement("div");
+            var _p_result = document.createElement("p");
+            _p_result.style = "margin-left: .3em";
+            var xhr = new XMLHttpRequest();
+            var url = '/api/v01/exec?exec=' + _input_cmd.value;
+            xhr.open('POST', url, true);
+            xhr.setRequestHeader('Content-Type', 'text/html');
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    var res = JSON.parse(xhr.responseText);
+                    var res_array = res['data'].split('\n');
+                    for (var i = 0; i < res_array.length; i++) {
+                        _p_result.innerHTML += '<strong>'+res_array[i]+'<strong><br>';
+                    }
+                } else if (xhr.status === 400) {
+                    var res = JSON.parse(xhr.responseText);
+                    _p_result.innerHTML = '<strong style="color: red;">'+res['message'] +'</strong>';
+                } else if (xhr.status === 500) {
+                    _p_result.innerHTML = '<strong style="color: red;">Access Denied</strong>';
+                }
+            };
+            xhr.send();
+            _div_result.appendChild(_p_result);
+            _exec_result.appendChild(_div_result);
+            return;
+        };
+        _div_exec.appendChild(_lbl);
+        _div_exec.appendChild(_input_cmd);
+        _div_exec.appendChild(_btn_exec);
+        _div_main.appendChild(_div_exec);
+        _already_exec = true;
+    }
+}
+function _funcLogout() {
+    var url = '/api/v01/logout';
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', url, true);
+    xhr.setRequestHeader('Content-Type', 'text/html');
+    xhr.onreadystatechange = function () {
+        if (xhr.readyState === 4 && xhr.status === 200) {
+            window.location.replace('/');
+        } else if (xhr.status === 400) {
+            var res = JSON.parse(xhr.responseText);
+            var _msg = document.getElementById('_msg');
+            _msg.innerHTML = '<strong style="color: red;">ERROR: </strong>' + res['message'];
+            return;
+        }
+    }
+    xhr.send();
+}
+
+function _funcTbl() {
+    var tbl_user = document.getElementById('tbl_user');
+    for (var i = 1; i < tbl_user.rows.length; i++) {
+        tbl_user.rows[i].onclick = function() {
+            /* deselect all rows*/
+            for (var j = 1; j < tbl_user.rows.length; j++) {
+                tbl_user.rows[j].style = 'none';
+            }
+            this.style ='background-color: rgba(150, 179, 249, 0.64)';
+            var _btn_edit = document.getElementById('_btn_edit');
+            var _btn_delete = document.getElementById('_btn_del');
+            if (_btn_edit.disabled) {
+                _btn_edit.disabled = false;
+            }
+            if (_btn_delete.disabled) {
+                _btn_delete.disabled = false;
+            }
+            var msg =document.getElementById('_msg');
+            _selected_user = this.cells[1].innerHTML;
+            _selected_username = this.cells[2].innerHTML;
+            _selected_email  = this.cells[3].innerHTML;
+            _selected_address = this.cells[4].innerHTML;
+            _selected_description  = this.cells[5].innerHTML;
+            _msg.innerHTML = '<strong style="color: red;">[user]: </strong>' + _selected_user;
+        };
+    }   
+}
+
+function _userdel() {
+    var _modal_confirm = document.getElementById('_modal_confirm');
+    _modal_confirm.style.display='block';
+}
+
+
+function _close_modal(even) {
+    var _modal_acc_edit = document.getElementById('_modal_acc_edit');
+    var _acc_info = document.getElementById('_acc_info');
+    _acc_info.innerHTML = 'Add A New Account';
+    if (_modal_acc_edit.style.display == 'block') {
+        _modal_acc_edit.style.display = 'none';
+    }
+}
+
+
+function _close_confirm() {
+    var _modal_confirm = document.getElementById('_modal_confirm');
+    _modal_confirm.style.display='none';
+}
+
+function _accdel() {
+    var _msg = document.getElementById('_msg');
+    var _modal_confirm = document.getElementById('_modal_confirm');
+    if (_selected_user == '') {
+        _modal_confirm.style.display='none';
+        _msg.innerHTML = '<strong style="color: red;">[ERROR]: </strong>' + 'no user selected!';
+    } else {
+        var xhr = new XMLHttpRequest();
+        var url = '/api/v01/accdel?nickname=' + _selected_user;
+        xhr.open('DELETE', url, true);
+        xhr.setRequestHeader('Content-Type', 'text/html');
+        xhr.onreadystatechange = function () {
+            _modal_confirm.style.display='none';
+            if (xhr.readyState === 4 && xhr.status === 200) {
+                window.location.replace('/home');
+            } else {
+                if (xhr.status === 400) {
+                    var res = JSON.parse(xhr.responseText);
+                    _msg.innerHTML = '<strong style="color: red;">[ERROR]: </strong>' + res['message'];
+                } else {
+                    _msg.innerHTML = '<strong style="color: red;">[ERROR]: </strong>' + 'Access Denied.';
+                }
+            }
+        }
+        xhr.send();
+    }
+}
+
+/* Edit a user and show modal*/
+function _accedit() {
+    if (!_acc_edit) {
+        _acc_edit = true;
+    }
+    var _msg = document.getElementById('msg');
+    _msg.innerHTML = '<strong>Used for Demotration Only</strong>';
+    var _modal_acc_edit = document.getElementById('_modal_acc_edit');
+    var _nickname = document.getElementById('_nickname');
+    _nickname.value = _selected_user;
+    if (!_nickname.disabled) {
+        _nickname.disabled = true;
+    }
+    var _username = document.getElementById('_username');
+    _username.value = _selected_username;
+    var _address = document.getElementById('_address');
+    _address.value = _selected_address;
+    var _description = document.getElementById('_description');
+    _description.value = _selected_description;
+    var _email = document.getElementById('_email');
+    _email.value = _selected_email;
+    var _acc_info = document.getElementById('_acc_info');
+    _acc_info.innerHTML = 'Edit An Account';
+    _modal_acc_edit.style.display = 'block';
+}
+/* Add a user and show modal */
+function _accadd() {
+    if (_acc_edit) {
+        _acc_edit = false;
+    }
+    var _msg = document.getElementById('msg');
+    _msg.innerHTML = '<strong>Used for Demotration Only</strong>';
+    var _modal_acc_edit = document.getElementById('_modal_acc_edit');
+    var _username = document.getElementById('_username');
+    var _nickname = document.getElementById('_nickname');
+    var _password = document.getElementById('_password');
+    var _password_confirm = document.getElementById('_password_confirm');
+    var _email = document.getElementById('_email');
+    var _address = document.getElementById('_address');
+    var _description = document.getElementById('_description');
+    if (_nickname.disabled) {
+        _nickname.disabled = false;
+    }
+    _modal_acc_edit.style.display = 'block';
+}
+/* Save user settings */
+function _accsave() {
+    var _msg = document.getElementById('msg');
+    _msg.innerHTML = '<strong>Used for Demotration Only</strong>';
+    var _modal_acc_edit = document.getElementById('_modal_acc_edit');
+    var _username = document.getElementById('_username').value;
+    var _nickname = document.getElementById('_nickname').value;
+    var _password = document.getElementById('_password').value;
+    var _password_confirm = document.getElementById('_password_confirm').value;
+    var _email = document.getElementById('_email').value;
+    var _address = document.getElementById('_address').value;
+    var _description = document.getElementById('_description').value;
+    if (_acc_edit == false) {
+        console.log('_add_acc()');
+        if (_nickname == '' || _password_confirm == '' || _password == '' || _email == '' || _username == '' || _address == '') {
+            msg.innerHTML = '<strong style="color: red;">[ERROR]: </strong>' + 'imcomplete user infomation';
+            return;
+        }
+        if (_password != _password_confirm) {
+            msg.innerHTML = '<strong style="color: red;">[ERROR]: </strong>' + 'password not matched';
+            return;
+        }
+        var xhr = new XMLHttpRequest();
+        var url = '/api/v01/accadd?nickname=' + _nickname;
+        url += '&password=' + _password;
+        url += '&username=' + _username;
+        url += '&email=' + _email;
+        url += '&address=' + _address;
+        url += '&description=' + _description;
+        xhr.open('POST', url, true);
+        xhr.setRequestHeader('Content-Type', 'text/html');
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState === 4 && xhr.status === 200) {
+                window.location.replace('/home');
+            } else if (xhr.status != 200) {
+                var res = JSON.parse(xhr.responseText);
+                msg.innerHTML = '<strong style="color:red;">ERROR: </strong>' +res['message'];
+                return;
+            } else {
+                msg.innerHTML = '<strong style="color:red;">ERROR: </strong>' + 'Unknown Error.';
+            }
+        }
+        xhr.send();
+    } else {
+        console.log('_edit_acc()');
+        if (_username == '' || _email == '' || _address == '') {
+            msg.innerHTML = '<strong style="color: red;">[ERROR]: </strong>' + 'imcomplete user infomation';
+            return;
+        }
+        if (_password != '') {
+            if (_password != _password_confirm) {
+                msg.innerHTML = '<strong style="color: red;">[ERROR]: </strong>' + 'password not matched';
+                return;
+            }
+        }
+        var xhr = new XMLHttpRequest();
+        var url = '/api/v01/accedit?nickname=' +_nickname;
+        url += '&password='+_password;
+        url += '&username='+_username;
+        url += '&email='+_email;
+        url += '&address='+_address;
+        url += '&description='+_description;
+        xhr.open('GET', url, true);
+        xhr.setRequestHeader('Content-Type', 'text/html');
+        xhr.onreadystatechange = function() {
+            console.log(xhr.responseText);
+            if (xhr.readyState === 4 && xhr.status === 200) {
+                window.location.replace('/home');
+            }
+        }
+        xhr.send();
+    }
+}
+</script>

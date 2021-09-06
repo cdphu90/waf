@@ -1,0 +1,98 @@
+<div class="account-container">
+    <div class="form-header"></div>
+    <div>
+        <label style="font-size: 40px; margin-left: .2em">Fortinet WAF uCase Demo</label>
+        <br>
+        <label >Sigup a user account</label>
+    </div>
+    <div style="border: 1px solid #777; border-radius: 4px; border-bottom: 2px solid; margin-top: .5em; margin-left: .5em; margin-right: .5em;">
+        <div style="margin-top: .5em;">
+            <label >Nickname:</label>
+        </div>
+        <div >
+            <input id = '_nickname' placeholder="User Login Name">
+            <span style="color: red; font-size: 12px;">(*14)</span>
+        </div>
+        <div>
+            <label for="">Password:</label>
+        </div>
+        <div>
+            <input id='_password' type="password" placeholder="Login Password">
+            <span style="color: red; font-size:12px">(*12)</span>
+            <label for="">Confirm Password:</label>
+            <input id='_password_confirm' type="password" placeholder="Confirm Password" style="width: 40%;">
+        </div>
+        <div>
+            <label for="">Username:</label>
+        </div>
+        <div>
+            <input id='_username' type="text" placeholder="Username" style="width: 93%;">
+        </div>
+        <div>
+            <label for="">Email Address:</label>
+        </div>
+        <div>
+            <input id = '_email'type="text" style="width: 93%;" placeholder="e.g user@uCase">
+        </div>
+        <div>
+            <label for="">User Address:</label>
+        </div>
+        <div>
+            <input id= '_address'type="text" style="width: 93%;" placeholder="e.g Ho Chi Minh City">
+        </div>
+        <div>
+            <label for="">Self Description:</label>
+        </div>
+        <div>
+            <input id = '_description' type="text" placeholder="e.g User self description" style="width: 93%;">
+        </div>
+    </div>
+    <div>
+        <button onclick="_do_account()">Save</button>
+        <button onclick="window.location.replace('/home')">Cancel</button>
+    </div>
+    <div class="form-header">
+        <span id='_msg'>Used for Demotration Only</span>
+    </div>
+</div>
+<script type="text/javascript">
+    function _do_account() {
+        var nickname = document.getElementById('_nickname').value;
+        var password = document.getElementById('_password').value;
+        var password_cfm = document.getElementById('_password_confirm').value;
+        var username = document.getElementById('_username').value;
+        var email = document.getElementById('_email').value;
+        var address = document.getElementById('_address').value;
+        var description = document.getElementById('_description').value;
+        var msg = document.getElementById('_msg');
+        if (nickname == '' || password == '' || password_cfm == '' || username == '' || email == '' || address == '') {
+            msg.innerHTML = '<strong style="color:red;">ERROR: </strong>' + 'Incomplete User Information.';
+            return;
+        }
+        if (password_cfm != password) {
+            msg.innerHTML = '<strong style="color:red;">ERROR: </strong>' + 'Password not matched.';
+            return;
+        }
+        var xhr = new XMLHttpRequest();
+        var url = '/api/v01/account-add?nickname=' + nickname;
+        url += '&password=' + password;
+        url += '&username=' + username;
+        url += '&email=' + email;
+        url += '&address=' + address;
+        url += '&description=' + description;
+        xhr.open('POST', url, true);
+        xhr.setRequestHeader('Content-Type', 'text/html');
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState === 4 && xhr.status === 200) {
+                window.location.replace('/home');
+            } else if (xhr.status != 200) {
+                var res = JSON.parse(xhr.responseText);
+                msg.innerHTML = '<strong style="color:red;">ERROR: </strong>' + +res['message'];
+                return;
+            } else {
+                msg.innerHTML = '<strong style="color:red;">ERROR: </strong>' + 'Unknown Error.';
+            }
+        }
+        xhr.send();
+    };
+</script>
