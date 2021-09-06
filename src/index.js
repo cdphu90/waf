@@ -24,6 +24,7 @@ app.engine('hbs', handlebars({
 app.set('view engine', 'hbs');
 app.set('views', path.join(__dirname, 'resources/views'));
 
+/* function get user from request cookie */
 function _getUserByCookie(_cookie) {
     stmt = "SELECT * FROM tbl_user WHERE cookie='" + _cookie +"'";
     var _nickname = false;
@@ -39,6 +40,11 @@ function _getUserByCookie(_cookie) {
     return _nickname;
 };
 
+/**
+ * 
+ * @param {*} req 
+ * @returns : false if not request cookie else cookie name
+ */
 function _getRequestCookie(req) {
     if (!req.cookies[cookie_name]) {
         return false;
