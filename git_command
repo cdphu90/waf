@@ -2,4 +2,4 @@
  git add .
  git commit -m "Initial commit"
  git remote add origin https://github.com/cdphu90/waf.git
- 1008  git push -u origin master
+ git push -u origin master
