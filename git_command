@@ -1,6 +1,5 @@
  git init
  git add .
- git commit "Initial commit"
  git commit -m "Initial commit"
  git remote add origin https://github.com/cdphu90/waf.git
  1008  git push -u origin master

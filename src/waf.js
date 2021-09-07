@@ -326,7 +326,6 @@ app.get('/api/v01/accedit', (req, res) => {
         }
     }
     stmt += " WHERE nickname='"+req.query.nickname +"'";
-    console.log(stmt);
     db.run(stmt, params, (err)=> {
         if (err) {
             return res.status(400).json({
