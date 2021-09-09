@@ -1,7 +1,8 @@
+#!/Library/Frameworks/Python.framework/Versions/3.9/bin/python3.9
 import requests
 import random
 import sys
-import string
+import time
 import getopt
 
 
@@ -17,9 +18,9 @@ def usage():
     print('\t\tcommand_injection: auto summit form values with number of request')
     print('\t\t+required: -n <number>: number of sample')
 
-
+ascii_string = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
 def gen_string(_num):
-    return ''.join(random.choice(string.ascii_lowercase) for _ in range(_num))
+    return ''.join(random.choice(ascii_string) for _ in range(_num))
 
 
 def gen_ip4():
@@ -27,12 +28,16 @@ def gen_ip4():
 
 
 def _training_sql_injection_param(_request_num):
-    for _ in range (_request_num):
-        rand_uname = gen_string()
-        rand_passwd = gen_string()
-        print('+[{}]training model url:ttp://{}/api/v01/auth?nickname={}&password={}'.format(_, host, rand_uname, rand_passwd))
-        req = requests.post("http://{}/api/v01/auth?nickname={}&password={}".format(host, gen_string(8), gen_string(8)), headers=hdr)
-        print('Response status: ', req.status_code);
+    try:
+        for _ in range (_request_num):
+            rand_uname = gen_string(8)
+            rand_passwd = gen_string(8)
+            print('+[{}]training model url:http://{}/api/v01/auth?nickname={}&password={}'.format(_, host, rand_uname, rand_passwd))
+            req = requests.post("http://{}/api/v01/auth?nickname={}&password={}".format(host, rand_uname, rand_passwd), headers=hdr)
+            print('Response status: ', req.status_code)
+            time.sleep(0.01)
+    except KeyboardInterrupt:
+        print('[STOPED]: ^c')
 
 
 def _training_command_injection(_request_num):

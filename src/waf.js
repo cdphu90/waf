@@ -104,7 +104,9 @@ app.post('/api/v01/auth', (req, res, next) => {
         errors.push('No password specified');
     }
     if (errors.length) {
-        return res.status(400).json({res_stt: res_err, res_msg: errors.join(',')});
+        return res.status(400).json({
+            res_stt: res_err, 
+            res_msg: errors.join(',')});
     }
     var nickname = req.query.nickname;
     var password = req.query.password;
@@ -250,7 +252,7 @@ app.post('/api/v01/accadd', (req, res) => {
     }
 
     var stmt = "INSERT INTO tbl_user (nickname, password, username, email, address, description) VALUES (?,?,?,?,?,?)";
-    var params = [req.query['nickname'], req.query['password'], req.query['username'], req.query['email'], req.query['address'], req.query['description']];
+    var params = [req.query.nickname, req.query.password, req.query.username, req.query.email, req.query.address, req.query.description];
     db.run(stmt, params, (err)=> {
         if (err) {
             return res.status(400).json({
