@@ -5,8 +5,9 @@ const handlebars = require('express-handlebars');
 const cookieParse = require('cookie-parser');
 const uuid = require('uuid');
 const exec = require('child_process').exec;
-const db = require('./include/database.js');
+const db = require('./include/database');
 const { stdout, stderr } = require('process');
+const { type } = require('os');
 const app = express();
 const port = 8080;
 const cookie_name = 'user_session';
@@ -14,9 +15,7 @@ const undef = 'undefined';
 const trainig_cookie = '63572724-11e1-11ec-9b42-3c15c2ea5372';
 
 /* Global Restful API message */
-const res_stt = 'stt';
 const res_err = 'error';
-const res_msg = 'message';
 const res_success = 'success';
 
 // Use cookie
@@ -38,11 +37,11 @@ function _getUserByCookie(_cookie) {
     var _nickname = false;
     db.all(stmt, [], (err, rows)=> {
         if (err) {
-            return false;
+            return null;
         } else if (rows.length) {
             _nickname = rows[0].nickname.toString();
         } else  {
-            return false;
+            return null;
         }
     });
     return _nickname;
@@ -55,7 +54,7 @@ function _getUserByCookie(_cookie) {
  */
 function _getRequestCookie(req) {
     if (!req.cookies[cookie_name]) {
-        return false;
+            return false;
     } 
     return req.cookies[cookie_name];
 }
@@ -164,8 +163,8 @@ app.post('/api/v01/auth', (req, res, next) => {
             });
         } else {
             return res.status(400).json({
-                res_stt: res_err, res_msg: 
-                'Authentication failure!'
+                res_stt: res_err,
+                res_msg: 'Authentication failure!'
             });
         }
     }));
@@ -184,8 +183,9 @@ app.get('/api/v01/logout', (req, res, next)=>{
     var _nickname;
     db.all(stmt, [], (err, rows) =>{
         if (err) {
-            return res.render(res_err, 
-                {layout: 'main', error: err.message
+            return res.render(res_err, {
+                layout: 'main', 
+                error: err.message
             });
         } else  if (rows.length){
             _nickname = rows[0]['nickname'];
