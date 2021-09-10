@@ -1,4 +1,3 @@
-const e = require('express');
 const path = require('path');
 var sqlite3 = require('sqlite3').verbose();
 const DBSOURCE = path.join(__dirname, '/db.sqlite');

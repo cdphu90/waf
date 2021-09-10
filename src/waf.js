@@ -402,6 +402,8 @@ app.delete('/api/v01/accdel', (req, res, next)=> {
         }
     });
 });
+
+/* Starting listening socket */
 app.listen(port, () => {
     console.log('*********************************************************************');
     console.log('* WELCOME TO TECHHORIZON CORP                                       *');
