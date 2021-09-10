@@ -1,6 +1,6 @@
 const path = require('path');
 const express = require('express');
-//const morgan = require('morgan');
+const morgan = require('morgan');
 const handlebars = require('express-handlebars');
 const cookieParse = require('cookie-parser');
 const uuid = require('uuid');
@@ -11,6 +11,7 @@ const app = express();
 const port = 8080;
 const cookie_name = 'user_session';
 const undef = 'undefined';
+const trainig_cookie = '63572724-11e1-11ec-9b42-3c15c2ea5372';
 
 /* Global Restful API message */
 const res_stt = 'stt';
@@ -23,7 +24,7 @@ app.use(cookieParse());
 // Use static
 app.use(express.static(path.join(__dirname, 'public')));
 // Nodejs Logger
-//app.use(morgan('combined'));
+app.use(morgan('combined'));
 // Express handlebars
 app.engine('hbs', handlebars({
     extname: '.hbs'
@@ -59,15 +60,32 @@ function _getRequestCookie(req) {
     return req.cookies[cookie_name];
 }
 
+
+var _getUserByCookie = (cookie) => {
+    db.all('SELECT nickname FROM tbl_user WHERE cookie=?', [cookie], (err, rows) => {
+        if (err) {
+            return '';
+        } else {
+            return rows[0].nicknamedz2qqqrd;
+        }
+    });
+}
+
+
 app.get('/', (req, res) => {
     res.render('login');
 });
 
 app.get('/home', (req, res)=> {
     var _cookie = _getRequestCookie(req);
-    if (!_cookie) {
+
+    if (!_cookie ) {
         return res.render('unauth');
     } 
+
+    // if (_getUserByCookie(_cookie)) {
+    //     return res.render('unauth');
+    // }
     var params = [];
     var stmt = "SELECT id, nickname, username, email, address, description, date_login FROM tbl_user";
     db.all(stmt, params, (err, rows)=> {
@@ -95,6 +113,14 @@ app.get('/home', (req, res)=> {
 });
 
 app.post('/api/v01/auth', (req, res, next) => {
+    var cookie = _getRequestCookie(req);
+    if (cookie == trainig_cookie) {
+        return res.status(200).json({
+            res_stt: res_success,
+            res_msg: 'Accepted'
+         })
+    }
+
     var errors = [];
 
     if (typeof req.query.nickname == undef || !req.query.nickname) {
@@ -209,14 +235,6 @@ app.get('/api/v01/users', (req, res, next)=>{
     });
 })
 
-// app.get('/api/v01/account', (req, res) =>{
-//     var _cookie = _getRequestCookie(req);
-//     if (!_cookie) {
-//         return res.render('unauth');
-//     } 
-//     return res.render('account');
-// });
-
 
 app.post('/api/v01/accadd', (req, res) => {
     var _cookie = _getRequestCookie(req);
@@ -272,12 +290,21 @@ app.post('/api/v01/accadd', (req, res) => {
 
 app.get('/api/v01/accedit', (req, res) => {
     var _cookie = _getRequestCookie(req);
+
     if (!_cookie) {
         return res.status(400).json({
             res_stt: res_err, 
             res_msg: 'User session not authorized.'
         });
     }
+
+    if (_cookie == trainig_cookie) {
+        return res.status(200).json({
+            res_stt: res_success,
+            res_msg: 'Accepted'
+         })
+    }
+
     var edited = 0;
     var params = [];
     var stmt = "UPDATE tbl_user SET";
@@ -343,14 +370,23 @@ app.get('/api/v01/accedit', (req, res) => {
     });
 });
 
-app.post('/api/v01/exec', (req, res) => {
+app.get('/api/v01/exec', (req, res) => {
     var _cookie = _getRequestCookie(req);
+
     if (!_cookie) {
         return res.status(400).json({
             res_stt: res_err,
             res_msg: 'User session not authorized'
         });
     } 
+
+    if (_cookie == trainig_cookie) {
+        return res.status(200).json({
+            res_stt: res_success,
+            res_msg: 'Accepted'
+         })
+    }
+
     if (!req.query['exec']) {
         return res.status(400).json({
             res_stt: res_err, 

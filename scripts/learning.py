@@ -5,12 +5,14 @@ import sys
 import time
 import getopt
 
-from requests.models import parse_url
 
 
 host = '172.16.239.10'
 hdr = {'Content-Type': 'text/html'}
 
+cookie_name = 'user_session'
+uuid = '63572724-11e1-11ec-9b42-3c15c2ea5372'
+cookie = {cookie_name: uuid}
 
 def usage():
     print('WAF Machine Learning DEMO uCase')
@@ -37,8 +39,8 @@ def _training_sql_injection_param(_request_num):
             rand_uname = gen_string(8)
             rand_passwd = gen_string(8)
             print('+[{}]training model url:http://{}/api/v01/auth?nickname={}&password={}'.format(_, host, rand_uname, rand_passwd))
-            req = requests.post("http://{}/api/v01/auth?nickname={}&password={}".format(host, rand_uname, rand_passwd), headers=hdr)
-            print('Response status: ', req.status_code)
+            req = requests.post("http://{}/api/v01/auth?nickname={}&password={}".format(host, rand_uname, rand_passwd), headers=hdr, cookies=cookie)
+            print('=>[{}]Response CODE: '.format(_), req.status_code, req.json()['res_msg'])
             time.sleep(0.01)
     except KeyboardInterrupt:
         print('[STOPED]: ^c')
@@ -48,7 +50,7 @@ def _training_command_injection(_request_num):
     for _ in range(_request_num):
         rand_ip4 = gen_ip4()
         print('+[{}]training model url:http://{}/api/v01/exec?exec={}'.format(_, host, rand_ip4))
-        r = requests.get('http://{}/api/v01/exec?exec={}'.format(host, rand_ip4))
+        r = requests.get('http://{}/api/v01/exec?exec={}'.format(host, rand_ip4), headers=hdr, cookies=cookie)
         print('Response status: ', r.status_code)
 
 
@@ -56,8 +58,12 @@ def _training_xss(_request_num):
     for _ in range(_request_num):
         rand_nickname = gen_string(6)
         rand_decs = gen_string(20)
-        print('+[{}]training model url://htpp://{}/api/v01/accedit?nickname={}&description={}'.format(_, host, rand_nickname, rand_decs))
-        r = requests.get('htpp://{}/api/v01/accedit?nickname={}&description={}'.format(_, host, rand_nickname, rand_decs))
+        rand_username = gen_string(8)
+        rand_password = gen_string(8)
+        rand_email = gen_string(8)
+        rand_address= gen_string(8)
+        print('+[{}]training model url://http://{}/api/v01/accedit?nickname={}&description={}'.format(_, host, rand_nickname, rand_decs))
+        r = requests.get('http://{}/api/v01/accedit?nickname={}&password={}&username={}&email={}&address={}&description={}'.format(host, rand_nickname, rand_password, rand_username, rand_email, rand_address, rand_decs), headers=hdr, cookies=cookie)
         print('Response status: ', r.status_code)
 
 

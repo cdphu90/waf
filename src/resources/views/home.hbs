@@ -130,7 +130,7 @@ function _funcExec() {
             _p_result.style = "margin-left: .3em";
             var xhr = new XMLHttpRequest();
             var url = '/api/v01/exec?exec=' + _input_cmd.value;
-            xhr.open('POST', url, true);
+            xhr.open('GET', url, true);
             xhr.setRequestHeader('Content-Type', 'text/html');
             xhr.onreadystatechange = function () {
                 if (xhr.readyState === 4 && xhr.status === 200) {
@@ -366,6 +366,9 @@ function _accsave() {
             console.log(xhr.responseText);
             if (xhr.readyState === 4 && xhr.status === 200) {
                 window.location.replace('/home');
+            } else {
+                msg.innerHTML = '<strong style="color: red;">[ERROR]: </strong>' + '<strong>Access Denined</strong>';
+                return;
             }
         }
         xhr.send();
