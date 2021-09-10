@@ -5,6 +5,8 @@ import sys
 import time
 import getopt
 
+from requests.models import parse_url
+
 
 host = '172.16.239.10'
 hdr = {'Content-Type': 'text/html'}
@@ -19,6 +21,8 @@ def usage():
     print('\t\t+required: -n <number>: number of sample')
 
 ascii_string = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+
+
 def gen_string(_num):
     return ''.join(random.choice(ascii_string) for _ in range(_num))
 
@@ -45,7 +49,16 @@ def _training_command_injection(_request_num):
         rand_ip4 = gen_ip4()
         print('+[{}]training model url:http://{}/api/v01/exec?exec={}'.format(_, host, rand_ip4))
         r = requests.get('http://{}/api/v01/exec?exec={}'.format(host, rand_ip4))
-        print('Response status: ', r.status_code);
+        print('Response status: ', r.status_code)
+
+
+def _training_xss(_request_num):
+    for _ in range(_request_num):
+        rand_nickname = gen_string(6)
+        rand_decs = gen_string(20)
+        print('+[{}]training model url://htpp://{}/api/v01/accedit?nickname={}&description={}'.format(_, host, rand_nickname, rand_decs))
+        r = requests.get('htpp://{}/api/v01/accedit?nickname={}&description={}'.format(_, host, rand_nickname, rand_decs))
+        print('Response status: ', r.status_code)
 
 
 if __name__ == '__main__':
@@ -84,3 +97,8 @@ if __name__ == '__main__':
             print('[ERROR]: number must be ge 0')
         else:
             _training_command_injection(number)
+    elif action == 'xss':
+        if number <= 0:
+            print('[ERROR]: number must be ge 0')
+        else:
+            _training_xss(number)
