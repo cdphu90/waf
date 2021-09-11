@@ -1,4 +1,4 @@
-#!/Library/Frameworks/Python.framework/Versions/3.9/bin/python3.9
+#!/usr/local/bin/python3.9
 import json
 import requests
 import random
@@ -49,11 +49,12 @@ def _training_command_injection(host, _request_num):
     for _ in range(_request_num):
         rand_ip4 = gen_ip4()
         url = 'http://{}/api/v01/exec?exec={}'.format(host, rand_ip4)
+        #print('req url = {}'.format(url))
         res = requests.get(url, headers=hdr, cookies=cookie)
         print('=>[{}]Res Code: {} {}'.format(_, res.status_code, res.json()['res_msg']))
 
 
-def _training_xss(_host, request_num):
+def _training_xss(host, request_num):
     for _ in range(request_num):
         rand_nickname = gen_string(6)
         rand_decs = gen_string(20)

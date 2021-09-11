@@ -130,7 +130,7 @@ function _funcExec() {
             _p_result.style = "margin-left: .3em";
             var xhr = new XMLHttpRequest();
             var url = '/api/v01/exec?exec=' + _input_cmd.value;
-            xhr.open('GET', url, true);
+            xhr.open('POST', url, true);
             xhr.setRequestHeader('Content-Type', 'text/html');
             xhr.onreadystatechange = function () {
                 if (xhr.readyState === 4 && xhr.status === 200) {
