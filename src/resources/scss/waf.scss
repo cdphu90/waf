@@ -1,7 +1,7 @@
 @import 'variables';
 
 body {
-    background-color:$waf_background;
+    background-color:$waf_background !important;
     font-family: $waf_font;
     color: $waf_color;
 }

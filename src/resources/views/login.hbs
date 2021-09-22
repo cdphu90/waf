@@ -1,46 +1,63 @@
-<div class="login-form">
-    <div class="form-header"></div>
-    <div>
-        <input type="text" placeholder="USERNAME" id='_username'>
-    </div>
-    <div>
-        <input type="password" placeholder="PASSWORD" id='_password'>
-    </div>
-    <div>
-        <button onclick="_funcLogin()">Submit</button>
-    </div>
-    <div class="form-header">
-        <span id = '_msg'>Please login</span>
+<div class="container">
+    <div class="row mt-200">
+        <div class="col-xs-4 col-sm-4 col-md-4 col-lg-4">
+        </div>
+        <div class="col-xs-4 col-sm-4 col-md-4 col-lg-4">
+            <div class="panel panel-primary">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Thông tin đăng nhập</h3>
+                </div>
+                <div class="panel-body">
+                    <div class="form-group">
+                        <input type="text" class="form-control form-control-sm " placeholder="TÊN ĐĂNG NHẬP"
+                            id='_username'>
+                        <input type="password" class="form-control  mt-3" placeholder="MẬT KHẨU"
+                            id='_password'>
+                    </div>
+                    <div class="text-center">
+                        <button type="submit" onclick="_funcLogin()" class="btn btn-primary btn-sm">
+                            Đăng Nhập
+                        </button> &nbsp;
+                        <button type="button" class="btn btn-danger btn-sm">Hủy Bỏ</button>
+                    </div>
+                </div>
+                <div class="text-center">
+                    <span class="label label-warning label-lg" id="_msg"></span>
+                </div>
+            </div>
+
+        </div>
+
     </div>
 
 </div>
 
 <script type="text/javascript">
-/* login with provided params */
-function _funcLogin() {
-    var username = document.getElementById('_username').value;
-    var password = document.getElementById('_password').value;
-    var msg = document.getElementById('_msg');
-    if (username == '' || password == '') {
-        msg.innerHTML = '<strong style="color: red;">ERROR: </strong>' + 'Incomplete user credential!';
-        return;
-    }
+    /* login with provided params */
+    function _funcLogin() {
+        var username = document.getElementById('_username').value;
+        var password = document.getElementById('_password').value;
+        var msg = document.getElementById('_msg');
+        if (username == '' || password == '') {
+            msg.innerHTML = '<strong style="color: red;">ERROR: </strong>' + 'Incomplete user credential!';
+            return;
+        }
 
-    let xhr = new XMLHttpRequest();
-    var url = '/api/v01/auth?nickname=' + username +'&password='+password;
-    xhr.open('POST', url, true);
-    xhr.setRequestHeader('Content-Type', 'text/html');
-    xhr.onreadystatechange = function() {
-        if (xhr.readyState === 4 && xhr.status === 200) {
-            msg.innerHTML = '<strong style="color: red;">SUCCESS: </strong>' + 'Authentication success!';
-            window.location.replace('/home');
-        }
-        if (xhr.status == 400) {
-            msg.innerHTML = '<strong style="color: red;">ERROR: </strong>' + 'Authentication Failured';
-        } else {
-            msg.innerHTML = '<strong style="color: red;">ERROR: </strong>' + 'Access Denied';
-        }
-    };
-    xhr.send();
-}
+        let xhr = new XMLHttpRequest();
+        var url = '/api/v01/auth?nickname=' + username + '&password=' + password;
+        xhr.open('POST', url, true);
+        xhr.setRequestHeader('Content-Type', 'text/html');
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState === 4 && xhr.status === 200) {
+                msg.innerHTML = '<strong style="color: red;">SUCCESS: </strong>' + 'Authentication success!';
+                window.location.replace('/home');
+            }
+            if (xhr.status == 400) {
+                msg.innerHTML = '<strong style="color: red;">ERROR: </strong>' + 'Authentication Failured';
+            } else {
+                msg.innerHTML = '<strong style="color: red;">ERROR: </strong>' + 'Access Denied';
+            }
+        };
+        xhr.send();
+    }
 </script>

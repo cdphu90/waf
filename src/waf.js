@@ -23,7 +23,7 @@ app.use(cookieParse());
 // Use static
 app.use(express.static(path.join(__dirname, 'public')));
 // Nodejs Logger
-app.use(morgan('combined'));
+//app.use(morgan('combined'));
 // Express handlebars
 app.engine('hbs', handlebars({
     extname: '.hbs'
@@ -136,6 +136,7 @@ app.post('/api/v01/auth', (req, res, next) => {
     var nickname = req.query.nickname;
     var password = req.query.password;
     var stmt = "SELECT * FROM tbl_user WHERE nickname='" +nickname + "'" + "AND password='" + password +"'";
+    console.log("=>Client QUERY: ", stmt);
     var params = [];
     if (db.all(stmt, params, (err, rows) => {
         if (err) {
@@ -288,7 +289,7 @@ app.post('/api/v01/accadd', (req, res) => {
 });
 
 
-app.get('/api/v01/accedit', (req, res) => {
+app.post('/api/v01/accedit', (req, res) => {
     var _cookie = _getRequestCookie(req);
 
     if (!_cookie) {
@@ -370,7 +371,7 @@ app.get('/api/v01/accedit', (req, res) => {
     });
 });
 
-app.get('/api/v01/exec', (req, res) => {
+app.post('/api/v01/exec', (req, res) => {
     var _cookie = _getRequestCookie(req);
 
     if (!_cookie) {

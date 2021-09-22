@@ -1,0 +1,4 @@
+POST  http://localhost:8080/api/v01/auth?nickname=cis&password=admin%27%20or%20%271%27=%271
+Content-Type: text/html
+
+###

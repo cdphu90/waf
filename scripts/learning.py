@@ -41,17 +41,17 @@ def _training_sql_injection_param(host, _request_num):
         rand_passwd = gen_string(8)
         url = 'http://{}/api/v01/auth?nickname={}&password={}'.format(host, rand_uname, rand_passwd)
         res = requests.post(url, headers=hdr, cookies=cookie)
-        print('=>[{}]Res Code: {} {}'.format(_, res.status_code, res.json()['res_msg']))
+        print('=>[{}]Res Code: {} {} for params: nickname={}&password={}'.format(_, res.status_code, res.json()['res_msg'], rand_uname, rand_passwd))
         time.sleep(0.01)
 
 
 def _training_command_injection(host, _request_num):
     for _ in range(_request_num):
-        rand_ip4 = gen_ip4()
-        url = 'http://{}/api/v01/exec?exec={}'.format(host, rand_ip4)
+        ip4 = gen_ip4()
+        url = 'http://{}/api/v01/exec?exec={}'.format(host, ip4)
         #print('req url = {}'.format(url))
-        res = requests.get(url, headers=hdr, cookies=cookie)
-        print('=>[{}]Res Code: {} {}'.format(_, res.status_code, res.json()['res_msg']))
+        res = requests.post(url, headers=hdr, cookies=cookie)
+        print('=>[{}]Res Code: {} {} for params: exec={}'.format(_, res.status_code, res.json()['res_msg'], ip4))
 
 
 def _training_xss(host, request_num):
@@ -63,8 +63,8 @@ def _training_xss(host, request_num):
         rand_email = gen_string(8)
         rand_address= gen_string(8)
         url = 'http://{}/api/v01/accedit?nickname={}&password={}&username={}&email={}&address={}&description={}'.format(host, rand_nickname, rand_password, rand_username, rand_email, rand_address, rand_decs)
-        res = requests.get(url, headers=hdr, cookies=cookie)
-        print('=>[{}]: Res Code: {} {}'.format(_, res.status_code, res.json()['res_msg']))
+        res = requests.post(url, headers=hdr, cookies=cookie)
+        print('=>[{}]: Res Code: {} {} param: description={}'.format(_, res.status_code, res.json()['res_msg'], rand_decs))
 
 
 if __name__ == '__main__':
